@@ -1,0 +1,131 @@
+version: '3'
+
+services:
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        # ELK_VERSION: $ELK_VERSION
+        ELK_VERSION: 7.7.0
+ #   image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - cluster.initial_master_nodes=master
+      - node.name=master
+      - node.master=true    
+      - node.data=false
+      - node.ingest=false        
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      - xpack.license.self_generated.type=basic
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elk
+
+  elasticsearch2:
+    build:
+      context: elasticsearch/
+      args:
+        # ELK_VERSION: $ELK_VERSION
+        ELK_VERSION: 7.7.0
+    # container_name: elasticsearch2 
+    environment:
+      - cluster.name=docker-cluster
+      - cluster.initial_master_nodes=master
+      - bootstrap.memory_lock=true
+      - node.master=false    
+      - node.data=true    
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      - xpack.license.self_generated.type=basic
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    # volumes: #### Remarked for the option of scaling as it is not an option to use the same volume for more then one elastic
+    #   - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - elk     
+
+  logstash:
+    build:
+      context: logstash/
+      args:
+        # ELK_VERSION: $ELK_VERSION
+        ELK_VERSION: 7.7.0
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        # ELK_VERSION: $ELK_VERSION
+        ELK_VERSION: 7.7.0
+    container_name: kibana
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    build:
+      context: filebeat/
+      args:
+        #ELK_VERSION: $ELK_VERSION
+        ELK_VERSION: 7.7.0
+    volumes: 
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  nginx:
+    image: nginx:latest
+    ports:
+        - 8080:80
+    volumes:
+        - ./nginx-config/:/etc/nginx/conf.d/
+    command: /bin/bash -c "nginx -g 'daemon off;'"
+    ulimits:
+      nproc: 65535
+    networks:
+      - elk
+    depends_on:
+      - kibana
+
+
+
+networks:
+  elk:
+    
+
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
