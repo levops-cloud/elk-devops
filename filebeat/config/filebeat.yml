@@ -1,32 +1,36 @@
 ##### FILEBEAT NGINX Source log
-# filebeat.inputs:
-# - type: log
-#   enabled: true
-#   paths:
-#     - /var/log/nginx/nginx_json_logs.txt
-#   json.keys_under_root: true
-#   document_type: logs
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/nginx_json_logs.txt
+  json.keys_under_root: true
+  document_type: logs
 
-# output.elasticsearch:
-#   hosts: ["elasticsearch:9200"]
-#   index: "nginx_json_elastic"
-  #pipeline: nginx_json_pipeline
-
-# output.console:
-#   pretty: true
+output:
+  # elasticsearch:
+  #   hosts: ["elasticsearch:9200"]
+  #   index: "nginx_json_elastic"
+  #   pipeline: nginx_json_pipeline
+  # console:
+  #   pretty: true
+  logstash:
+    hosts: ["logstash:5044"]
 
 filebeat.modules:
+- module: nginx
 - module: apache2
 
 
-output.elasticsearch:
-  hosts: ["elasticsearch:9200"]
-  index: "apache-beats"
+# output.elasticsearch:
+#   hosts: ["elasticsearch:9200"]
+#   index: "apache-beats"
 # output.logstash:
-#   hosts: ["logstash:5044"]
+#   hosts: ["logstash:9600"]
 
 
-setup.template.enabled: false
+setup.template.enabled: true
+setup.kibana.host: "kibana:5601"
 
 ####### #### #### #### #### #### #### #### #### #### #### #### 
 #### #### #### #### #### #### #### #### #### #### #### #### 
