@@ -24,6 +24,9 @@ services:
       memlock:
         soft: -1
         hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
@@ -51,28 +54,31 @@ services:
       memlock:
         soft: -1
         hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     # volumes: #### Remarked for the option of scaling as it is not an option to use the same volume for more then one elastic
     #   - esdata2:/usr/share/elasticsearch/data
     networks:
       - elk     
 
-  logstash:
-    build:
-      context: logstash/
-      args:
-        # ELK_VERSION: $ELK_VERSION
-        ELK_VERSION: 7.7.0
-    volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
-    ports:
-      - "5000:5000"
-    environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-    networks:
-      - elk
-    depends_on:
-      - elasticsearch
+        #  logstash:
+        #    build:
+        #      context: logstash/
+        #      args:
+        #        # ELK_VERSION: $ELK_VERSION
+        #        ELK_VERSION: 7.7.0
+        #    volumes:
+        #      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+        #      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+        #    ports:
+        #      - "5000:5000"
+        #    environment:
+        #      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+        #    networks:
+        #      - elk
+        #    depends_on:
+        #      - elasticsearch
 
   kibana:
     build:
@@ -98,6 +104,7 @@ services:
         ELK_VERSION: 7.7.0
     volumes: 
       - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./filebeat/datasets/access_log:/var/logs/access2_log:ro
     networks:
       - elk
     depends_on:

@@ -5,11 +5,12 @@
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
-    var.paths: /var/log/httpd/access_log
+    var.paths: /var/log/apache2/access.log
 
   # Error logs
   error:
-    enabled: false
+    enabled: true
+    var.path: /var/log/apache2/error.log
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.

@@ -4,7 +4,6 @@
       "index.refresh_interval": "5s"
     },
     "mappings": {
-      "doc": {
         "dynamic_templates": [
           {
             "message_field": {
@@ -49,4 +48,3 @@
         }
       }
     }
-  }
